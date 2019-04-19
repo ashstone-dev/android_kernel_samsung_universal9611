@@ -33,10 +33,6 @@ SUBSYS(memory)
 SUBSYS(devices)
 #endif
 
-#if IS_ENABLED(CONFIG_CGROUP_FREEZER)
-SUBSYS(freezer)
-#endif
-
 #if IS_ENABLED(CONFIG_CGROUP_NET_CLASSID)
 SUBSYS(net_cls)
 #endif
