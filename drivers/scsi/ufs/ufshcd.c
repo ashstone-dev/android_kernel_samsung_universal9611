@@ -9696,6 +9696,7 @@ int ufshcd_shutdown(struct ufs_hba *hba)
 	struct SEC_UFS_UTP_count *utp_err = &(err_info->UTP_count);
 	struct SEC_UFS_QUERY_count *query_cnt = &(err_info->query_count);
 	int ret = 0;
+	if (system_state != SYSTEM_RUNNING) return 0;
 
 	if (!hba->is_powered)
 		goto out;

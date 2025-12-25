@@ -474,7 +474,7 @@ void __blk_drain_queue(struct request_queue *q, bool drain_all)
 		 * The caller might be trying to drain @q before its
 		 * elevator is initialized.
 		 */
-		if (q->elevator)
+		if (q && q->elevator)
 			elv_drain_elevator(q);
 
 		blkcg_drain_queue(q);
