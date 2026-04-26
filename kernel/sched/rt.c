@@ -2682,7 +2682,7 @@ unsigned long frt_cpu_util_wake(int cpu, struct task_struct *p)
 	 * cpu_util for this case.
 	 */
 	if (!walt_disabled && sysctl_sched_use_walt_cpu_util)
-		return cpu_util(cpu);
+		return cpu_util(cpu_rq(cpu));
 #endif
 	/* Task has no contribution or is new */
 	if (cpu != task_cpu(p) || !READ_ONCE(p->se.avg.last_update_time))
