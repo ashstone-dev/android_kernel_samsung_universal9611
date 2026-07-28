@@ -14,7 +14,6 @@
 #include <trace/events/ems.h>
 
 #include "../sched.h"
-#include "../tune.h"
 #include "./ems.h"
 
 /****************************************************************/
@@ -66,16 +65,15 @@ static inline struct sched_entity *se_of(struct sched_avg *sa)
 	return container_of(sa, struct sched_entity, avg);
 }
 
-extern long schedtune_margin(unsigned long signal, long boost);
 static inline unsigned long ontime_load_avg(struct task_struct *p)
 {
-	int boost = schedtune_task_boost(p);
 	unsigned long load_avg = ontime_of(p)->avg.load_avg;
+	unsigned long uclamp_min = uclamp_eff_value(p, UCLAMP_MIN);
 
-	if (boost == 0)
+	if (uclamp_min == 0)
 		return load_avg;
 
-	return load_avg + schedtune_margin(load_avg, boost);
+	return max(load_avg, uclamp_min);
 }
 
 struct ontime_cond *get_current_cond(int cpu)
@@ -278,7 +276,7 @@ ontime_pick_heavy_task(struct sched_entity *se, int *boost_migration)
 	struct task_struct *p;
 	unsigned int max_util_avg = 0;
 	int task_count = 0;
-	int boosted = !!global_boosted() || !!schedtune_prefer_perf(task_of(se));
+	int boosted = !!global_boosted() || (uclamp_eff_value(task_of(se), UCLAMP_MIN) > 0);
 
 	/*
 	 * Since current task does not exist in entity list of cfs_rq,
@@ -289,7 +287,7 @@ ontime_pick_heavy_task(struct sched_entity *se, int *boost_migration)
 		*boost_migration = 1;
 		return p;
 	}
-	if (schedtune_ontime_en(p)) {
+	if (uclamp_eff_value(p, UCLAMP_MIN) > 0) {
 		if (ontime_load_avg(p) >= get_upper_boundary(task_cpu(p))) {
 			heaviest_task = p;
 			max_util_avg = ontime_load_avg(p);
@@ -304,13 +302,13 @@ ontime_pick_heavy_task(struct sched_entity *se, int *boost_migration)
 			goto next_entity;
 
 		p = task_of(se);
-		if (schedtune_prefer_perf(p)) {
+		if (uclamp_eff_value(p, UCLAMP_MIN) > 0) {
 			heaviest_task = p;
 			*boost_migration = 1;
 			break;
 		}
 
-		if (!schedtune_ontime_en(p))
+		if (uclamp_eff_value(p, UCLAMP_MIN) == 0)
 			goto next_entity;
 
 		if (ontime_load_avg(p) < get_upper_boundary(task_cpu(p)))
@@ -584,7 +582,7 @@ int ontime_task_wakeup(struct task_struct *p, int sync)
 	int dst_cpu, src_cpu = task_cpu(p);
 
 	/* If this task is not allowed to ontime, do not ontime wakeup */
-	if (!schedtune_ontime_en(p))
+	if (uclamp_eff_value(p, UCLAMP_MIN) == 0)
 		return -1;
 
 	/* When wakeup task is on ontime migrating, do not ontime wakeup */
@@ -624,7 +622,7 @@ int ontime_can_migration(struct task_struct *p, int dst_cpu)
 {
 	int src_cpu = task_cpu(p);
 
-	if (!schedtune_ontime_en(p))
+	if (uclamp_eff_value(p, UCLAMP_MIN) == 0)
 		return true;
 
 	if (ontime_of(p)->migrating == 1) {

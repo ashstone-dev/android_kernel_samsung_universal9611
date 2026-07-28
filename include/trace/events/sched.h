@@ -1061,82 +1061,6 @@ TRACE_EVENT(sched_boost_cpu,
 );
 
 /*
- * Tracepoint for schedtune_tasks_update
- */
-TRACE_EVENT(sched_tune_tasks_update,
-
-	TP_PROTO(struct task_struct *tsk, int cpu, int tasks, int idx,
-		int boost, int max_boost, u64 group_ts),
-
-	TP_ARGS(tsk, cpu, tasks, idx, boost, max_boost, group_ts),
-
-	TP_STRUCT__entry(
-		__array( char,	comm,	TASK_COMM_LEN	)
-		__field( pid_t,		pid		)
-		__field( int,		cpu		)
-		__field( int,		tasks		)
-		__field( int,		idx		)
-		__field( int,		boost		)
-		__field( int,		max_boost	)
-		__field( u64,		group_ts	)
-	),
-
-	TP_fast_assign(
-		memcpy(__entry->comm, tsk->comm, TASK_COMM_LEN);
-		__entry->pid		= tsk->pid;
-		__entry->cpu 		= cpu;
-		__entry->tasks		= tasks;
-		__entry->idx 		= idx;
-		__entry->boost		= boost;
-		__entry->max_boost	= max_boost;
-		__entry->group_ts	= group_ts;
-	),
-
-	TP_printk("pid=%d comm=%s "
-			"cpu=%d tasks=%d idx=%d boost=%d max_boost=%d timeout=%llu",
-		__entry->pid, __entry->comm,
-		__entry->cpu, __entry->tasks, __entry->idx,
-		__entry->boost, __entry->max_boost,
-		__entry->group_ts)
-);
-
-/*
- * Tracepoint for schedtune_grouputil_update
- */
-TRACE_EVENT(sched_tune_grouputil_update,
-
-	TP_PROTO(int idx, int total, int accumulated, unsigned long group_util,
-			struct task_struct *heaviest_p, unsigned long biggest_util),
-
-	TP_ARGS(idx, total, accumulated, group_util, heaviest_p, biggest_util),
-
-	TP_STRUCT__entry(
-		__field( int,		idx		)
-		__field( int,		total		)
-		__field( int,		accumulated	)
-		__field( unsigned long,	group_util	)
-		__field( pid_t,		pid		)
-		__array( char,	comm,	TASK_COMM_LEN	)
-		__field( unsigned long,	biggest_util	)
-	),
-
-	TP_fast_assign(
-		__entry->idx		= idx;
-		__entry->total		= total;
-		__entry->accumulated	= accumulated;
-		__entry->group_util	= group_util;
-		__entry->pid		= heaviest_p->pid;
-		memcpy(__entry->comm, heaviest_p->comm, TASK_COMM_LEN);
-		__entry->biggest_util	= biggest_util;
-	),
-
-	TP_printk("idx=%d total=%d accumulated=%d group_util=%lu "
-			"heaviest task(pid=%d comm=%s util=%lu)",
-		__entry->idx, __entry->total, __entry->accumulated, __entry->group_util,
-		__entry->pid, __entry->comm, __entry->biggest_util)
-);
-
-/*
  * Tracepoint for checking group balancing
  */
 TRACE_EVENT(sched_tune_check_group_balance,
@@ -1159,31 +1083,6 @@ TRACE_EVENT(sched_tune_check_group_balance,
 
 	TP_printk("idx=%d imbalance_count=%d balancing=%d",
 		__entry->idx, __entry->ib_count, __entry->balancing)
-);
-
-/*
- * Tracepoint for schedtune_boostgroup_update
- */
-TRACE_EVENT(sched_tune_boostgroup_update,
-
-	TP_PROTO(int cpu, int variation, int max_boost),
-
-	TP_ARGS(cpu, variation, max_boost),
-
-	TP_STRUCT__entry(
-		__field( int,	cpu		)
-		__field( int,	variation	)
-		__field( int,	max_boost	)
-	),
-
-	TP_fast_assign(
-		__entry->cpu		= cpu;
-		__entry->variation	= variation;
-		__entry->max_boost	= max_boost;
-	),
-
-	TP_printk("cpu=%d variation=%d max_boost=%d",
-		__entry->cpu, __entry->variation, __entry->max_boost)
 );
 
 /*

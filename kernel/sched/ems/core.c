@@ -8,7 +8,6 @@
 #include <linux/ems.h>
 
 #include "../sched.h"
-#include "../tune.h"
 #include "ems.h"
 
 #define CREATE_TRACE_POINTS
@@ -696,7 +695,7 @@ static int select_proper_cpu(struct task_struct *p, int prev_cpu)
 
 			wake_util = cpu_util_wake(i, p);
 			new_util = wake_util + task_util_est(p);
-			new_util = max(new_util, boosted_task_util(p));
+			new_util = max(new_util, (unsigned long)uclamp_task(p));
 
 			/* skip over-capacity cpu */
 			if (new_util > capacity_orig)
@@ -782,13 +781,6 @@ int exynos_wakeup_balance(struct task_struct *p, int prev_cpu, int sd_flag, int 
 
 	/*
 	 * Priority 2 : prefer-perf
-	 *
-	 * Prefer-perf is a function that operates on cgroup basis managed by
-	 * schedtune. When perfer-perf is set to 1, the tasks in the group are
-	 * preferentially assigned to the performance cpu.
-	 *
-	 * It has a high priority because it is a function that is turned on
-	 * temporarily in scenario requiring reactivity(touch, app laucning).
 	 */
 	target_cpu = prefer_perf_cpu(p);
 	if (cpu_selected(target_cpu)) {
@@ -804,10 +796,6 @@ int exynos_wakeup_balance(struct task_struct *p, int prev_cpu, int sd_flag, int 
 	 * and assign on a specific cpu or cluster, the latency for interaction
 	 * decreases and the reusability of the cache increases, thereby improving
 	 * performance.
-	 *
-	 * The "task band" is a function that groups tasks on a per-process basis
-	 * and assigns them to a specific cpu or cluster. If the attribute "band"
-	 * of schedtune.cgroup is set to '1', task band operate on this cgroup.
 	 */
 	target_cpu = band_play_cpu(p);
 	if (cpu_selected(target_cpu)) {
@@ -837,13 +825,6 @@ int exynos_wakeup_balance(struct task_struct *p, int prev_cpu, int sd_flag, int 
 
 	/*
 	 * Priority 5 : prefer-idle
-	 *
-	 * Prefer-idle is a function that operates on cgroup basis managed by
-	 * schedtune. When perfer-idle is set to 1, the tasks in the group are
-	 * preferentially assigned to the idle cpu.
-	 *
-	 * Prefer-idle has a smaller performance impact than the above. Therefore
-	 * it has a relatively low priority.
 	 */
 	target_cpu = prefer_idle_cpu(p);
 	if (cpu_selected(target_cpu)) {

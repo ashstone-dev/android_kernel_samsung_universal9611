@@ -1,6 +1,4 @@
 /*
- * SchedTune add-on features
- *
  * Copyright (C) 2018 Samsung Electronics Co., Ltd
  * Park Bumgyu <bumgyu.park@samsung.com>
  */
@@ -11,7 +9,6 @@
 #include <trace/events/ems.h>
 
 #include "../sched.h"
-#include "../tune.h"
 #include "ems.h"
 
 /**********************************************************************
@@ -23,7 +20,7 @@
  */
 int prefer_perf_cpu(struct task_struct *p)
 {
-	if (schedtune_prefer_perf(p) <= 0)
+	if (!uclamp_boosted(p))
 		return -1;
 
 	return select_perf_cpu(p);
@@ -86,7 +83,7 @@ static int select_idle_cpu(struct task_struct *p)
 
 			wake_util = cpu_util_wake(i, p);
 			new_util = wake_util + task_util_est(p);
-			new_util = max(new_util, boosted_task_util(p));
+			new_util = max(new_util, (unsigned long)uclamp_task(p));
 
 			trace_ems_prefer_idle(p, task_cpu(p), i, capacity_orig, task_util_est(p),
 							new_util, idle_cpu(i));
@@ -126,7 +123,7 @@ static int select_idle_cpu(struct task_struct *p)
 
 int prefer_idle_cpu(struct task_struct *p)
 {
-	if (schedtune_prefer_idle(p) <= 0)
+	if (!uclamp_latency_sensitive(p))
 		return -1;
 
 	return select_idle_cpu(p);

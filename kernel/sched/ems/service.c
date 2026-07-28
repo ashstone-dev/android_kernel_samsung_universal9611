@@ -12,7 +12,6 @@
 #include <trace/events/ems.h>
 
 #include "../sched.h"
-#include "../tune.h"
 #include "ems.h"
 
 /**********************************************************************
@@ -158,18 +157,17 @@ select_prefer_cpu(struct task_struct *p, int coregroup_count, struct cpumask *pr
 int select_service_cpu(struct task_struct *p)
 {
 	struct prefer_perf *pp;
-	int boost, service_cpu;
+	int service_cpu;
 	unsigned long util;
 	char state[30];
 
 	if (!prefer_perf_services)
 		return -1;
 
-	boost = schedtune_prefer_perf(p);
-	if (boost <= 0)
+	if (!uclamp_boosted(p))
 		return -1;
 
-	pp = find_prefer_perf(boost);
+	pp = find_prefer_perf(1);
 	if (!pp)
 		return -1;
 
@@ -198,7 +196,7 @@ static ssize_t show_kpp(struct kobject *kobj,
 {
 	int i, ret = 0;
 
-	/* shows the prefer_perf value of all schedtune groups */
+	/* shows the prefer_perf value of all kpp groups */
 	for (i = 0; i < STUNE_GROUP_COUNT; i++)
 		ret += snprintf(buf + ret, 10, "%d ", kpp_status(i));
 
