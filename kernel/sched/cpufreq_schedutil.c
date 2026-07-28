@@ -20,7 +20,7 @@
 #include <trace/events/power.h>
 
 #include "sched.h"
-#include "tune.h"
+#include "ems/ems.h"
 
 unsigned long cpu_util_freq(int cpu);
 
@@ -243,7 +243,7 @@ static int sugov_select_scaling_cpu(void)
 	/* Idle core of the boot cluster is selected to scaling cpu */
 	for_each_cpu(cpu, &mask) {
 		rt = sched_get_rt_rq_util(cpu);
-		util = boosted_cpu_util(cpu);
+		util = cpu_util(cpu);
 		if (util < min) {
 			min = util;
 			candidate = cpu;
@@ -341,11 +341,7 @@ static void sugov_get_util(unsigned long *util, unsigned long *max, int cpu)
 
 	max_cap = arch_scale_cpu_capacity(NULL, cpu);
 
-#ifdef CONFIG_SCHED_TUNE
-	*util = stune_util(cpu);
-#else
 	*util = cpu_util_freq(cpu);
-#endif
 	*util = min(*util, max_cap);
 	*max = max_cap;
 
@@ -1014,7 +1010,7 @@ static int sugov_need_slack_timer(unsigned int cpu)
 	struct sugov_cpu *sg_cpu = &per_cpu(sugov_cpu, cpu);
 	struct sugov_exynos *sg_exynos = &per_cpu(sugov_exynos, cpu);
 
-	if (schedtune_cpu_boost(cpu))
+	if (READ_ONCE(cpu_rq(cpu)->uclamp[UCLAMP_MIN].value))
 		return 0;
 
 	if (sg_cpu->util > sg_exynos->min &&
