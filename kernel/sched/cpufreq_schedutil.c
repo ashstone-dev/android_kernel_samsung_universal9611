@@ -1010,7 +1010,7 @@ static int sugov_need_slack_timer(unsigned int cpu)
 	struct sugov_cpu *sg_cpu = &per_cpu(sugov_cpu, cpu);
 	struct sugov_exynos *sg_exynos = &per_cpu(sugov_exynos, cpu);
 
-	if (READ_ONCE(cpu_rq(cpu)->uclamp[UCLAMP_MIN].value))
+	if (uclamp_rq_get(cpu_rq(cpu), UCLAMP_MIN))
 		return 0;
 
 	if (sg_cpu->util > sg_exynos->min &&
