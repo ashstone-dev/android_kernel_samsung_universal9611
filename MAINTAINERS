@@ -7503,6 +7503,13 @@ F:	scripts/basic/
 F:	scripts/mk*
 F:	scripts/package/
 
+AUTOFDO BUILD
+M:     Rong Xu <xur@google.com>
+M:     Han Shen <shenhan@google.com>
+S:     Supported
+F:     Documentation/dev-tools/autofdo.rst
+F:     scripts/Makefile.autofdo
+
 KERNEL JANITORS
 L:	kernel-janitors@vger.kernel.org
 W:	http://kernelnewbies.org/KernelJanitors
