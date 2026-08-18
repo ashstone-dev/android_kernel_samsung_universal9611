@@ -69,11 +69,15 @@ static inline unsigned long ontime_load_avg(struct task_struct *p)
 {
 	unsigned long load_avg = ontime_of(p)->avg.load_avg;
 	unsigned long uclamp_min = uclamp_eff_value(p, UCLAMP_MIN);
+	unsigned long margin;
+
 
 	if (uclamp_min == 0)
 		return load_avg;
 
-	return max(load_avg, uclamp_min);
+	margin = cap_scale(uclamp_min, SCHED_CAPACITY_SCALE);
+
+	return min_t(unsigned long, load_avg + margin, SCHED_CAPACITY_SCALE);
 }
 
 struct ontime_cond *get_current_cond(int cpu)
