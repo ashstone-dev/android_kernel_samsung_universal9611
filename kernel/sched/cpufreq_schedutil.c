@@ -343,6 +343,12 @@ static void sugov_get_util(unsigned long *util, unsigned long *max, int cpu)
 
 	max_cap = arch_scale_cpu_capacity(NULL, cpu);
 
+	if (!uclamp_is_used() && rt_rq_is_runnable(&rq->rt)) {
+		*util = max_cap;
+		*max = max_cap;
+		return;
+	}
+
 	*util = cpu_util_freq(cpu);
 	*util = min(*util, max_cap);
 	*max = max_cap;
