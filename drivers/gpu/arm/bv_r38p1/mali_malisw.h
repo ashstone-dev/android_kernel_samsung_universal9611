@@ -104,8 +104,6 @@
 #define __fallthrough  __attribute__((fallthrough))
 #endif /* __fallthrough */
 #define fallthrough    __fallthrough
-#else
-#define fallthrough	   CSTD_NOP(...) /* fallthrough */
 #endif /* GCC_VERSION >= 70000 */
 #endif /* KERNEL_VERSION(5, 4, 0) */
 
