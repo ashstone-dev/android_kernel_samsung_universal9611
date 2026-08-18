@@ -80,6 +80,16 @@ static inline unsigned long ontime_load_avg(struct task_struct *p)
 	return min_t(unsigned long, load_avg + margin, SCHED_CAPACITY_SCALE);
 }
 
+static inline bool ontime_en(struct task_struct *p)
+{
+	return uclamp_eff_value(p, UCLAMP_MIN) > 0;
+}
+
+static inline bool ontime_prefer_perf(struct task_struct *p)
+{
+	return uclamp_latency_sensitive(p);
+}
+
 struct ontime_cond *get_current_cond(int cpu)
 {
 	struct ontime_cond *curr;
@@ -280,7 +290,7 @@ ontime_pick_heavy_task(struct sched_entity *se, int *boost_migration)
 	struct task_struct *p;
 	unsigned int max_util_avg = 0;
 	int task_count = 0;
-	int boosted = !!global_boosted() || (uclamp_eff_value(task_of(se), UCLAMP_MIN) > 0);
+	int boosted = !!global_boosted() || ontime_prefer_perf(task_of(se));
 
 	/*
 	 * Since current task does not exist in entity list of cfs_rq,
@@ -291,7 +301,7 @@ ontime_pick_heavy_task(struct sched_entity *se, int *boost_migration)
 		*boost_migration = 1;
 		return p;
 	}
-	if (uclamp_eff_value(p, UCLAMP_MIN) > 0) {
+	if (ontime_en(p)) {
 		if (ontime_load_avg(p) >= get_upper_boundary(task_cpu(p))) {
 			heaviest_task = p;
 			max_util_avg = ontime_load_avg(p);
@@ -306,13 +316,13 @@ ontime_pick_heavy_task(struct sched_entity *se, int *boost_migration)
 			goto next_entity;
 
 		p = task_of(se);
-		if (uclamp_eff_value(p, UCLAMP_MIN) > 0) {
+		if (ontime_prefer_perf(p)) {
 			heaviest_task = p;
 			*boost_migration = 1;
 			break;
 		}
 
-		if (uclamp_eff_value(p, UCLAMP_MIN) == 0)
+		if (!ontime_en(p))
 			goto next_entity;
 
 		if (ontime_load_avg(p) < get_upper_boundary(task_cpu(p)))
@@ -586,7 +596,7 @@ int ontime_task_wakeup(struct task_struct *p, int sync)
 	int dst_cpu, src_cpu = task_cpu(p);
 
 	/* If this task is not allowed to ontime, do not ontime wakeup */
-	if (uclamp_eff_value(p, UCLAMP_MIN) == 0)
+	if (!ontime_en(p))
 		return -1;
 
 	/* When wakeup task is on ontime migrating, do not ontime wakeup */
@@ -626,7 +636,7 @@ int ontime_can_migration(struct task_struct *p, int dst_cpu)
 {
 	int src_cpu = task_cpu(p);
 
-	if (uclamp_eff_value(p, UCLAMP_MIN) == 0)
+	if (!ontime_en(p))
 		return true;
 
 	if (ontime_of(p)->migrating == 1) {
