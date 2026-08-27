@@ -1,0 +1,61 @@
+name: Build kernel
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    env:
+      CLANG_URL: https://github.com/XSans0/WeebX-Clang/releases/download/WeebX-Clang-19.1.5-release/WeebX-Clang-19.1.5.tar.gz
+    strategy:
+      matrix:
+        target: [a51, f41, m31, m31s, m21, gta4xl, gta4xlwifi]
+
+    name: "Build for ${{matrix.target}}"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Download WeebX Clang
+        run: |
+          wget -qO weebx-clang.tar.gz "$CLANG_URL"
+          rm -rf toolchain
+          mkdir toolchain
+          tar -xzf weebx-clang.tar.gz -C toolchain --strip-components=1
+          rm -rf weebx-clang.tar.gz
+      
+      - name: Apply KernelSU Next event_queue patch
+        run: |
+          cd Patches
+          cp * ../KernelSU-Next
+          cd ..
+          cd KernelSU-Next/
+          patch -p1 < event_queue.patch
+          cd ..
+
+      - name: Build kernel
+        run: |
+          python3 build_kernel.py --target=${{ matrix.target }}
+      
+      - name: Set build date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@main
+        with:
+          name: Exynos9611-AOSP_${{ matrix.target }}_${{steps.date.outputs.date}}
+          path: Exynos9611-AOSP_${{ matrix.target }}_*.zip
+          if-no-files-found: error
+
+      - name: Upload Logs
+        if: failure()
+        uses: actions/upload-artifact@main
+        with:
+          name: Exynos9611-AOSP_${{ matrix.target }}_${{steps.date.outputs.date}}-LOG
+          path: "*.log"
+          if-no-files-found: warn
