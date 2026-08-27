@@ -132,3 +132,6 @@ scripts/fmp/__pycache__/
 # Build
 out/
 Exynos9611-AOSP_*.zip
+
+# Misc
+!Patches/*
