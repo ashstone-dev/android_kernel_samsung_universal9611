@@ -390,7 +390,7 @@ void dump_tasks(struct mem_cgroup *memcg, const nodemask_t *nodemask)
 
 	swap_orig_nrpages = get_swap_orig_data_nrpages();
 	swap_comp_nrpages = get_swap_comp_pool_nrpages();
-	pr_info("[ pid ]   uid  tgid total_vm total_rss (   rss     swap  ) nr_ptes nr_pmds swapents oom_score_adj name\n");
+	pr_info("[ pid ]   uid  tgid total_vm total_rss (   rss     swap  ) pgtables_bytes swapents oom_score_adj name\n");
 #else
 	pr_info("[ pid ]   uid  tgid total_vm      rss pgtables_bytes swapents oom_score_adj name\n");
 #endif
@@ -412,7 +412,7 @@ void dump_tasks(struct mem_cgroup *memcg, const nodemask_t *nodemask)
 #if defined(CONFIG_SWAP)
 		task_swap = get_mm_counter(task->mm, MM_SWAPENTS) *
 				swap_comp_nrpages / swap_orig_nrpages;
-		pr_info("[%5d] %5d %5d %8lu  %8lu (%8lu %8lu) %7ld %7ld %8lu         %5hd %s\n",
+		pr_info("[%5d] %5d %5d %8lu  %8lu (%8lu %8lu) %8ld %8lu         %5hd %s\n",
 #else
 		pr_info("[%5d] %5d %5d %8lu %8lu %8ld %8lu         %5hd %s\n",
 #endif
