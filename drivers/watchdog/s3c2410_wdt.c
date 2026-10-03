@@ -1164,6 +1164,7 @@ static int s3c2410wdt_dev_resume(struct device *dev)
 	struct s3c2410_wdt *wdt = dev_get_drvdata(dev);
 
 	if (!wdt)
+	s3c2410wdt_keepalive(&wdt->wdt_device);
 		return ret;
 
 	/* little cluster wdt should excute syscore resume */
@@ -1235,6 +1236,7 @@ static void s3c2410wdt_syscore_resume(void)
 		if (ret < 0) {
 			dev_info(wdt->dev, "automatic_dsiable fail");
 			return;
+	s3c2410wdt_keepalive(&wdt->wdt_device);
 		}
 	}
 
