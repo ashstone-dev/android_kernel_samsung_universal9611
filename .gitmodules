@@ -1,0 +1,9 @@
+[submodule "KernelSU"]
+	path = KernelSU
+	url = https://github.com/backslashxx/KernelSU
+	branch = master
+
+[submodule "NoMount"]
+	path = NoMount
+	url = https://github.com/maxsteeel/nomount
+	branch = dev
