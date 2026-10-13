@@ -45,8 +45,10 @@ static struct sk_buff *slsi_mlme_wait_for_cfm(struct slsi_dev *sdev, struct slsi
 {
 	struct sk_buff *cfm = NULL;
 	int            tm;
+#if 0
 	int            r;
 	char             log_to_sys_error_buffer[128] = { 0 };
+#endif
 
 #ifdef CONFIG_SCSC_WLAN_RX_NAPI
 	tm = wait_for_completion_timeout(&sig_wait->completion, msecs_to_jiffies(*sdev->sig_wait_cfm_timeout - (*sdev->sig_wait_cfm_timeout >> 2)));

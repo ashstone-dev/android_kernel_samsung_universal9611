@@ -36,7 +36,9 @@ static int sap_mlme_notifier(struct slsi_dev *sdev, unsigned long event)
 {
 	int i;
 #if defined(CONFIG_SLSI_WLAN_STA_FWD_BEACON) && (defined(SCSC_SEP_VERSION) && SCSC_SEP_VERSION >= 10)
+#if 0
 	struct net_device *dev;
+#endif
 #endif
 	int level;
 	struct netdev_vif *ndev_vif;
