@@ -1289,7 +1289,7 @@ static int conn_gadget_setup(struct conn_gadget_instance *fi_conn_gadget)
 err_:
 
     if (dev->rd_queue_buf)
-	vfree(dev->rd_queue_buf);
+			vfree(dev->rd_queue_buf);
 
 	_conn_gadget_dev = NULL;
 	kfree(dev);
@@ -1309,9 +1309,9 @@ static void conn_gadget_cleanup(struct kref *kref)
 	misc_deregister(&conn_gadget_device);
 
     if (_conn_gadget_dev->rd_queue_buf)
-        vfree(_conn_gadget_dev->rd_queue_buf);
+      vfree(_conn_gadget_dev->rd_queue_buf);
 
-	kfree(_conn_gadget_dev);
+kfree(_conn_gadget_dev);
 	_conn_gadget_dev = NULL;
 }
 
