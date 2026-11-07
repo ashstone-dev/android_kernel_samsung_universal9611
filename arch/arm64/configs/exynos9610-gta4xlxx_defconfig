@@ -5164,11 +5164,6 @@ CONFIG_SENSORS_SSP_CAMERALIGHT_FOR_TAB=y
 CONFIG_SPU_VERIFY=y
 
 #
-# samsung Performace manager
-#
-CONFIG_KPERFMON=y
-
-#
 # Firmware Drivers
 #
 CONFIG_ARM_PSCI_FW=y
