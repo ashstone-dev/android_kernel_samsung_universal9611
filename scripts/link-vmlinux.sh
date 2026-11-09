@@ -403,15 +403,5 @@ if [ -n "${CONFIG_KALLSYMS}" ]; then
 	fi
 fi
 
-if [ -n "${CONFIG_CRYPTO_FIPS}" ]; then
-	echo '  FIPS : Generating hmac of crypto and updating vmlinux... '
-	PYTHONDONTWRITEBYTECODE=0 "${srctree}/scripts/crypto/fips_crypto_integrity.py" "${objtree}/vmlinux" "${READELF}"
-fi
-
-if [ -n "${CONFIG_EXYNOS_FMP_FIPS}" ]; then
-    echo '  FIPS : Generating hmac of fmp and updating vmlinux... '
-	PYTHONDONTWRITEBYTECODE=0 "${srctree}/scripts/fmp/fips_fmp_integrity.py" "${objtree}/vmlinux" "${READELF}"
-fi
-
 # We made a new kernel - delete old version file
 rm -f .old_version

@@ -319,9 +319,6 @@ static int exyswd_rng_probe(struct platform_device *pdev)
 	rng.quality = 500;
 
 	spin_lock_init(&hwrandom_lock);
-#if defined(CONFIG_EXYRNG_FIPS_COMPLIANCE)
-	start_up_test = 1;
-#endif
 
 	atomic_set(&hwrng_suspend_flag, 0);
 	atomic_set(&hwrng_running_flag, 0);

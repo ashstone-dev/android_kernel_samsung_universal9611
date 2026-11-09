@@ -462,24 +462,6 @@ config HW_RANDOM_EXYNOS_SWD
 
 	  If unsure, say Y.
 
-config EXYRNG_FIPS_COMPLIANCE
-	bool "Compliant with FIPS 140-2"
-	depends on HW_RANDOM_EXYNOS_SWD
-
-choice
-	prompt "Fail Policy"
-	depends on EXYRNG_FIPS_COMPLIANCE
-	default EXYRNG_FAIL_POLICY_DISABLE
-
-config EXYRNG_FAIL_POLICY_DISABLE
-	bool "Disable RNG if the tests fail"
-	depends on EXYRNG_FIPS_COMPLIANCE
-
-config EXYRNG_FAIL_POLICY_RESET
-	bool "Reset if the tests fail"
-	depends on EXYRNG_FIPS_COMPLIANCE
-endchoice
-
 config EXYRNG_USE_CRYPTOMANAGER
 	tristate "Use CryptoManager"
 	depends on HW_RANDOM_EXYNOS_SWD

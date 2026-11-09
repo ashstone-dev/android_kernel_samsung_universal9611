@@ -27,10 +27,6 @@
 #include <linux/completion.h>
 #include "internal.h"
 
-#ifdef CONFIG_CRYPTO_FIPS /* FIPS_140_2 */
-#include "fips140.h"
-#endif
-
 LIST_HEAD(crypto_alg_list);
 EXPORT_SYMBOL_GPL(crypto_alg_list);
 DECLARE_RWSEM(crypto_alg_sem);
@@ -359,11 +355,6 @@ struct crypto_tfm *__crypto_alloc_tfm(struct crypto_alg *alg, u32 type,
 	unsigned int tfm_size;
 	int err = -ENOMEM;
 
-#ifdef CONFIG_CRYPTO_FIPS /* FIPS_140_2 */
-	if (unlikely(in_fips_err()))
-		return ERR_PTR(-EACCES);
-#endif
-
 	tfm_size = sizeof(*tfm) + crypto_ctxsize(alg, type, mask);
 	tfm = kzalloc(tfm_size, GFP_KERNEL);
 	if (tfm == NULL)
@@ -420,11 +411,6 @@ struct crypto_tfm *crypto_alloc_base(const char *alg_name, u32 type, u32 mask)
 	struct crypto_tfm *tfm;
 	int err;
 
-#ifdef CONFIG_CRYPTO_FIPS /* FIPS_140_2 */
-	if (unlikely(in_fips_err()))
-		return ERR_PTR(-EACCES);
-#endif
-
 	for (;;) {
 		struct crypto_alg *alg;
 
@@ -462,13 +448,6 @@ void *crypto_create_tfm(struct crypto_alg *alg,
 	unsigned int tfmsize;
 	unsigned int total;
 	int err = -ENOMEM;
-
-#ifdef CONFIG_CRYPTO_FIPS /* FIPS_140_2 */
-	if (unlikely(in_fips_err())) {
-		pr_err("Fail %s due to fips error state.\n", __func__);
-		return ERR_PTR(-EACCES);
-	}
-#endif
 
 	tfmsize = frontend->tfmsize;
 	total = tfmsize + sizeof(*tfm) + frontend->extsize(alg);
@@ -549,11 +528,6 @@ void *crypto_alloc_tfm(const char *alg_name,
 	void *tfm;
 	int err;
 
-#ifdef CONFIG_CRYPTO_FIPS /* FIPS_140_2 */
-	if (unlikely(in_fips_err()))
-		return ERR_PTR(-EACCES);
-#endif
-
 	for (;;) {
 		struct crypto_alg *alg;
 
@@ -583,14 +557,6 @@ err:
 }
 EXPORT_SYMBOL_GPL(crypto_alloc_tfm);
 
-#ifdef CONFIG_CRYPTO_FIPS_FUNC_TEST
-static void hexdump(unsigned char *buf, unsigned int len)
-{
-	print_hex_dump(KERN_INFO, "FIPS FUNC : ", DUMP_PREFIX_OFFSET,
-			16, 1, buf, len, false);
-}
-#endif
-
 /*
  *	crypto_destroy_tfm - Free crypto transform
  *	@mem: Start of tfm slab
@@ -612,21 +578,7 @@ void crypto_destroy_tfm(void *mem, struct crypto_tfm *tfm)
 		alg->cra_exit(tfm);
 	crypto_exit_ops(tfm);
 	crypto_mod_put(alg);
-#ifdef CONFIG_CRYPTO_FIPS_FUNC_TEST
-	if (!strcmp("zeroization", get_fips_functest_mode())) {
-		int t = ksize(mem);
-
-		pr_err("FIPS FUNC : Zeroization %s %d\n", __func__, t);
-		hexdump(mem, t);
-		kzfree(mem);
-		pr_err("FIPS FUNC : Zeroization %s %d\n", __func__, t);
-		hexdump(mem, t);
-	} else {
-		kzfree(mem);
-	}
-#else
 	kzfree(mem);
-#endif /* CONFIG_CRYPTO_FIPS_FUNC_TEST */
 }
 EXPORT_SYMBOL_GPL(crypto_destroy_tfm);
 
