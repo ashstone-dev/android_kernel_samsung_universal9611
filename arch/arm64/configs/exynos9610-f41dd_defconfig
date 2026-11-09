@@ -585,8 +585,6 @@ CONFIG_ARM64_MODULE_CMODEL_LARGE=y
 CONFIG_CMDLINE=""
 # CONFIG_EFI is not set
 # CONFIG_BUILD_ARM64_APPENDED_DTB_IMAGE is not set
-# CONFIG_UH is not set
-# CONFIG_UH_LKM_BLOCK is not set
 
 #
 # Userspace binary formats
