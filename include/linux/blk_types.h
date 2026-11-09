@@ -84,9 +84,6 @@ struct bio {
 	bio_end_io_t		*bi_end_io;
 
 	void			*bi_private;
-#ifdef CONFIG_BLK_DEV_CRYPT
-	void			*bi_cryptd;
-#endif
 
 #ifdef CONFIG_BLK_CGROUP
 	/*

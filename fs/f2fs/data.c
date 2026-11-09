@@ -117,10 +117,6 @@ static bool try_merge_bio_encrypted(struct bio *bio, u64 dun, void *ci, bool enc
 	if (bio->bi_cryptd != ci)
 		return false;
 
-#ifdef CONFIG_BLK_DEV_CRYPT_DUN
-	if (bio_end_dun(bio) != dun)
-		return false;
-#endif
 	return true;
 }
 
