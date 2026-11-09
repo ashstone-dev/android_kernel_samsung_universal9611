@@ -183,9 +183,6 @@ int inode_init_always(struct super_block *sb, struct inode *inode)
 	mapping_set_gfp_mask(mapping, GFP_HIGHUSER_MOVABLE);
 	mapping->private_data = NULL;
 	mapping->writeback_index = 0;
-#if defined(CONFIG_SDP) && !defined(CONFIG_FSCRYPT_SDP)
-	mapping->userid = 0;
-#endif
 	inode->i_private = NULL;
 	inode->i_mapping = mapping;
 	INIT_HLIST_HEAD(&inode->i_dentry);	/* buggered by rcu freeing */
@@ -1869,18 +1866,7 @@ int file_update_time(struct file *file)
 	if (!timespec_equal(&inode->i_ctime, &now))
 		sync_it |= S_CTIME;
 
-	/* iversion impacts on "write" performance. This code just filter inodes
-	 * by presence in integrity cache (S_IMA flag, security/integrity/iint.c).
-	 * Because only FIVE uses iversion in Samsung Kernel this patch shouldn't
-	 * affect other code.
-	 * NOTICE: iversion code has been optimized in v4.17-rc4. So this patch should be
-	 * removed since v4.17-rc4
-	 */
-	#ifdef CONFIG_FIVE
-	need_sync = IS_I_VERSION(inode) && (inode->i_flags & S_IMA);
-	#else
 	need_sync = IS_I_VERSION(inode);
-	#endif
 	if (need_sync)
 		sync_it |= S_VERSION;
 
