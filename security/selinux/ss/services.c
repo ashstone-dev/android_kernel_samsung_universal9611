@@ -52,12 +52,6 @@
 #include <linux/selinux.h>
 #include <linux/flex_array.h>
 #include <linux/vmalloc.h>
-#ifdef CONFIG_UH
-#include <linux/uh.h>
-#ifdef CONFIG_RKP_KDP
-#include <linux/rkp.h>
-#endif
-#endif
 #include <net/netlabel.h>
 
 #include "flask.h"
@@ -99,11 +93,7 @@ static DEFINE_RWLOCK(policy_rwlock);
 
 static struct sidtab sidtab;
 struct policydb policydb;
-#if (defined CONFIG_RKP_KDP && defined CONFIG_SAMSUNG_PRODUCT_SHIP)
-int ss_initialized __kdp_ro;
-#else
 int ss_initialized;
-#endif
 
 /*
  * The largest sequence number that has been used when
@@ -774,9 +764,7 @@ out:
 
 // [ SEC_SELINUX_PORTING_COMMON
 #ifdef CONFIG_ALWAYS_ENFORCE
-#if !defined(CONFIG_RKP_KDP)
 	selinux_enforcing = 1;
-#endif
 #endif
 // ] SEC_SELINUX_PORTING_COMMON
 	if (!selinux_enforcing)
@@ -1565,9 +1553,7 @@ out:
 
 // [ SEC_SELINUX_PORTING_COMMON
 #ifdef CONFIG_ALWAYS_ENFORCE
-#if !defined(CONFIG_RKP_KDP)
 	selinux_enforcing = 1;
-#endif
 #endif
 // ] SEC_SELINUX_PORTING_COMMON
 	if (!selinux_enforcing)
@@ -1863,9 +1849,7 @@ static inline int convert_context_handle_invalid_context(struct context *context
 
 // [ SEC_SELINUX_PORTING_COMMON
 #ifdef CONFIG_ALWAYS_ENFORCE
-#if !defined(CONFIG_RKP_KDP)
 	selinux_enforcing = 1;
-#endif
 #endif
 // ] SEC_SELINUX_PORTING_COMMON
 	if (selinux_enforcing)
@@ -2126,11 +2110,7 @@ int security_load_policy(void *data, size_t len)
 		}
 
 		security_load_policycaps();
-#if (defined CONFIG_RKP_KDP && defined CONFIG_SAMSUNG_PRODUCT_SHIP)
-		uh_call(UH_APP_RKP, RKP_KDP_X60, (u64)&ss_initialized, 1, 0, 0);
-#else
 		ss_initialized = 1;
-#endif
 		seqno = ++latest_granting;
 		selinux_complete_init();
 		avc_ss_reset(seqno);
